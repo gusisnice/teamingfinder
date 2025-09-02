@@ -62,7 +62,7 @@ export default function Home() {
           Find Teaming Partners
         </h1>
         <p className="text-gray-500 text-sm mb-10">
-          Team with set-aside businesses for your opportunity
+          Find certified businesses for your opportunity
         </p>
         
         <form onSubmit={handleSubmit} className="space-y-6 mb-10">

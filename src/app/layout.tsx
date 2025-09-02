@@ -9,7 +9,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "Teaming Finder",
-  description: "Find set-aside teaming partners for federal contracts",
+  description: "Find certified businesses for federal contracts",
 };
 
 export default function RootLayout({
