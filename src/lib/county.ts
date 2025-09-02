@@ -1,5 +1,6 @@
 import { promises as fs } from 'fs';
 import * as path from 'path';
+import { SEARCH_RADIUS_MILES, EARTH_RADIUS_MILES } from './constants';
 
 // Type definitions
 type Coords = { lat: number; lon: number };
@@ -95,7 +96,7 @@ async function loadData() {
 
 // Calculate distance between two points in miles
 function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 3959;
+  const R = EARTH_RADIUS_MILES;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
   
@@ -107,7 +108,7 @@ function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 }
 
 // Main function: ZIP → counties within radius
-export async function findCountiesWithinRadius(zipCode: string, radiusMiles = 100) {
+export async function findCountiesWithinRadius(zipCode: string, radiusMiles = SEARCH_RADIUS_MILES) {
   await loadData();
   
   const centerFips = ZIP_TO_FIPS.get(zipCode);

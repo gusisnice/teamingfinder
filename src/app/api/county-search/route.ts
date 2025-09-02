@@ -1,4 +1,5 @@
 import { findCountiesWithinRadius, extractZipFromAddress } from '@/lib/county';
+import { SEARCH_RADIUS_MILES } from '@/lib/constants';
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
@@ -21,7 +22,7 @@ export async function POST(request: Request) {
   }
   
   try {
-    const result = await findCountiesWithinRadius(zipCode, 100);
+    const result = await findCountiesWithinRadius(zipCode, SEARCH_RADIUS_MILES);
     return NextResponse.json(result);
   } catch (error) {
     return NextResponse.json(
