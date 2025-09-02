@@ -8,7 +8,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "FedMatch - Federal Contracting Partners",
+  title: "Teaming Finder",
   description: "Find set-aside teaming partners for federal contracts",
 };
 
