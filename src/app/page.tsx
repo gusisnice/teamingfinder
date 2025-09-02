@@ -135,7 +135,7 @@ export default function Home() {
                   <button
                     key={option.value}
                     type="button"
-                    onClick={(e) => {
+                    onClick={() => {
                       const button = document.getElementById('dropdownButton') as HTMLButtonElement;
                       const input = document.getElementById('setAsideTypeInput') as HTMLInputElement;
                       const span = button.querySelector('span') as HTMLSpanElement;
