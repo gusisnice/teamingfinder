@@ -36,15 +36,11 @@ export const SBA_REQUEST_TEMPLATE = {
 
 // Valid set-aside types from federal contracting
 export const VALID_SET_ASIDES = [
-  'NONE',
   '8(a)',
-  'WOSB',
-  'VOSB', 
-  'SDVOSB',
   'HUBZone',
+  'WOSB',
   'EDWOSB',
-  'SDB',
-  'SBA'
+  'SDVOSB'
 ] as const;
 
 export type SetAsideType = typeof VALID_SET_ASIDES[number];

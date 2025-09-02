@@ -1,103 +1,205 @@
-import Image from "next/image";
+'use client';
+
+import { useState, FormEvent } from 'react';
+
+type ContractorData = {
+  recipient_name: string;
+  recipient_id: string;
+  recipient_uei: string;
+  total_awards: number;
+  award_count: number;
+  contact_person: string | null;
+  email: string | null;
+  phone: string | null;
+  website: string | null;
+  year_established: string | null;
+  sam_active: boolean;
+  sba_certifications: string[];
+};
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState<ContractorData[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setResults(null);
+    
+    const formData = new FormData(e.currentTarget);
+    const address = formData.get('address') as string;
+    const naicsCode = formData.get('naics') as string;
+    const setAsideType = formData.get('setAsideType') as string;
+    
+    try {
+      const res = await fetch('/api/partner-search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ address, naicsCode, setAsideType })
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok) throw new Error(data.error || 'Search failed');
+      
+      setResults(data.contractors);
+      if (data.contractors.length === 0) {
+        setError('No contractors found matching your criteria');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <main className="min-h-screen bg-white py-16 px-4">
+      <div className="max-w-2xl mx-auto">
+        <h1 className="text-2xl font-medium text-gray-900 mb-1">
+          Find Teaming Partners
+        </h1>
+        <p className="text-gray-500 text-sm mb-10">
+          Team with set-aside businesses for your opportunity
+        </p>
+        
+        <form onSubmit={handleSubmit} className="space-y-6 mb-10">
+          <div>
+            <label htmlFor="address" className="block text-sm text-gray-900 mb-2">
+              Where is the work?
+            </label>
+            <input
+              id="address"
+              name="address"
+              type="text"
+              required
+              maxLength={5}
+              onInput={(e) => {
+                const input = e.target as HTMLInputElement;
+                input.value = input.value.replace(/\D/g, '');
+              }}
+              placeholder="Add ZIP code"
+              className="w-full px-4 py-3 bg-gray-50 border-0 rounded-lg focus:outline-none focus:bg-white focus:ring-1 focus:ring-gray-900 transition-all"
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          </div>
+          
+          <div>
+            <label htmlFor="naics" className="block text-sm text-gray-900 mb-2">
+              What kind of work?
+            </label>
+            <input
+              id="naics"
+              name="naics"
+              type="text"
+              required
+              maxLength={6}
+              pattern="\d{6}"
+              onInput={(e) => {
+                const input = e.target as HTMLInputElement;
+                input.value = input.value.replace(/\D/g, '');
+              }}
+              placeholder="Add NAICS code"
+              className="w-full px-4 py-3 bg-gray-50 border-0 rounded-lg focus:outline-none focus:bg-white focus:ring-1 focus:ring-gray-900 transition-all"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm text-gray-900 mb-2">
+              What certification needed?
+            </label>
+            <div className="relative group">
+              <input type="hidden" name="setAsideType" id="setAsideTypeInput" required />
+              <button
+                type="button"
+                id="dropdownButton"
+                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-lg focus:outline-none focus:bg-white focus:ring-1 focus:ring-gray-900 transition-all text-left flex justify-between items-center peer"
+                data-value=""
+              >
+                <span className="text-gray-500">
+                  Select certification type
+                </span>
+                <svg className="h-4 w-4 text-gray-400 transition-transform group-focus-within:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              <div className="absolute z-10 w-full mt-1 bg-white rounded-lg shadow-lg border border-gray-100 opacity-0 invisible group-focus-within:opacity-100 group-focus-within:visible transition-all">
+                {[
+                  { value: '8(a)', label: '8(a)' },
+                  { value: 'HUBZone', label: 'HUBZone' },
+                  { value: 'WOSB', label: 'Women-Owned Small Business' },
+                  { value: 'SDVOSB', label: 'Service-Disabled Veteran-Owned Small Business' },
+                  { value: 'EDWOSB', label: 'Economically Disadvantaged Women-Owned Small Business' }
+                ].map(option => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={(e) => {
+                      const button = document.getElementById('dropdownButton') as HTMLButtonElement;
+                      const input = document.getElementById('setAsideTypeInput') as HTMLInputElement;
+                      const span = button.querySelector('span') as HTMLSpanElement;
+                      button.dataset.value = option.value;
+                      input.value = option.value;
+                      span.textContent = option.label;
+                      span.className = 'text-gray-900';
+                      button.blur();
+                    }}
+                    onMouseDown={(e) => e.preventDefault()}
+                    className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 transition-colors first:rounded-t-lg last:rounded-b-lg"
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+            
+          
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 px-4 bg-neutral-800 text-white text-sm font-medium rounded-lg hover:bg-neutral-700 disabled:bg-neutral-300 disabled:cursor-not-allowed transition-colors"
           >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+            {loading ? 'Finding Partners...' : 'Find Partners'}
+          </button>
+        </form>
+        
+        {error && (
+          <div className="text-red-600 text-sm mb-8">
+            {error}
+          </div>
+        )}
+        
+        {results && results.length > 0 && (
+          <div className="space-y-3">
+            {results.map((contractor) => (
+              <article key={contractor.recipient_id} className="bg-gray-50 rounded-lg p-5">
+                <h3 className="font-medium text-gray-900 mb-3">
+                  {contractor.recipient_name}
+                </h3>
+                <div className="space-y-2 text-sm text-gray-600">
+                  {contractor.contact_person && (
+                    <div className="space-y-1">
+                      <p>{contractor.contact_person.toLowerCase().replace(/\b\w/g, c => c.toUpperCase())}</p>
+                      {contractor.email && <p>{contractor.email}</p>}
+                      {contractor.phone && (
+                        <p>
+                          ({contractor.phone.slice(0, 3)}) {contractor.phone.slice(3, 6)}-{contractor.phone.slice(6, 10)}
+                        </p>
+                      )}
+                      {contractor.website && <p>{contractor.website.replace(/^www\./, '')}</p>}
+                    </div>
+                  )}
+                  {contractor.year_established && (
+                    <p>Established {contractor.year_established}</p>
+                  )}
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </div>
+    </main>
   );
 }

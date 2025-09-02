@@ -30,6 +30,7 @@ export async function POST(request: Request) {
     const countyResult = await findCountiesWithinRadius(zipCode, SEARCH_RADIUS_MILES);
     const countyFips = countyResult.nearbyCounties.map(c => c.fips);
     
+    
     // Search contractors in those counties
     const contractors = await searchContractors(
       countyFips,
@@ -51,10 +52,15 @@ export async function POST(request: Request) {
     // Enrich with SBA data
     const enrichedContractors = await enrichContractorsWithSBA(contractors);
     
+    // Filter to only include contractors with the matching certification
+    const filteredContractors = enrichedContractors.filter(contractor => 
+      contractor.sba_certifications.includes(setAsideType)
+    );
+    
     return NextResponse.json({
       centerCounty: countyResult.centerCounty,
       totalCountiesSearched: countyResult.totalFound,
-      contractors: enrichedContractors
+      contractors: filteredContractors
     });
     
   } catch (error) {

@@ -46,6 +46,15 @@ function fipsToLocation(fips: string) {
 }
 
 // Search contractors in USAspending API
+// Map certification types to USAspending set-aside codes
+const SET_ASIDE_MAPPINGS: Record<string, string[]> = {
+  '8(a)': ['8AN', '8AA', '8AC', 'SBP', 'HS8'],
+  'HUBZone': ['HZC', 'HS8', 'HZS'],
+  'WOSB': ['WOSB', 'A6'],
+  'EDWOSB': ['EDWOSB', 'A5'],
+  'SDVOSB': ['SDVOSB', 'A2', 'SDVOSBC', 'VSA', 'VSS']
+};
+
 export async function searchContractors(
   countyFips: string[],
   naicsCode: string,
@@ -59,6 +68,8 @@ export async function searchContractors(
   if (!VALID_SET_ASIDES.includes(setAsideType as SetAsideType)) {
     throw new Error(`Invalid set-aside type: ${setAsideType}. Valid types: ${VALID_SET_ASIDES.join(', ')}`);
   }
+  
+  const setAsideCodes = SET_ASIDE_MAPPINGS[setAsideType] || [setAsideType];
 
   // Build time period
   const endDate = toISODate(new Date());
@@ -82,11 +93,12 @@ export async function searchContractors(
       time_period: [{ start_date: startDateStr, end_date: endDate }],
       place_of_performance_locations: locations,
       naics_codes: { require: [naicsCode] },
-      set_aside_type_codes: [setAsideType]
+      set_aside_type_codes: setAsideCodes
     },
     fields: ['Recipient Name', 'recipient_id', 'Recipient UEI', 'Award Amount'],
     limit: API_PAGE_SIZE
   };
+
 
   // Paginate through results
   let allResults: USASpendingResponse['results'] = [];

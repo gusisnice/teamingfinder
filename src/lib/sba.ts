@@ -8,6 +8,7 @@ type SBAResult = {
   contact_person: string | null;
   email: string | null;
   phone: string | null;
+  website: string | null;
   year_established: string | null;
   sam_active: boolean;
   certifications: string[];
@@ -25,6 +26,7 @@ export type EnrichedContractor = ContractorWithUEI & {
   contact_person: string | null;
   email: string | null;
   phone: string | null;
+  website: string | null;
   year_established: string | null;
   sam_active: boolean;
   sba_certifications: string[];
@@ -68,6 +70,7 @@ async function searchByUEI(uei: string): Promise<SBAResult | undefined> {
       contact_person: result.contact_person || null,
       email: result.email || null,
       phone: result.phone || null,
+      website: result.website || null,
       year_established: result.year_established || null,
       sam_active: result.sam_extract_code === 'A',
       certifications: activeCerts
@@ -92,6 +95,7 @@ export async function enrichContractorsWithSBA(
       contact_person: sbaData?.contact_person || null,
       email: sbaData?.email || null,
       phone: sbaData?.phone || null,
+      website: sbaData?.website || null,
       year_established: sbaData?.year_established || null,
       sam_active: sbaData?.sam_active || false,
       sba_certifications: sbaData?.certifications || []
