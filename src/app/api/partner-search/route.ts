@@ -1,5 +1,6 @@
 import { findCountiesWithinRadius, extractZipFromAddress } from '@/lib/county';
 import { searchContractors } from '@/lib/usaspending';
+import { enrichContractorsWithSBA } from '@/lib/sba';
 import { SEARCH_RADIUS_MILES, MAX_CONTRACTORS } from '@/lib/constants';
 import { NextResponse } from 'next/server';
 
@@ -47,10 +48,13 @@ export async function POST(request: Request) {
       });
     }
     
+    // Enrich with SBA data
+    const enrichedContractors = await enrichContractorsWithSBA(contractors);
+    
     return NextResponse.json({
       centerCounty: countyResult.centerCounty,
       totalCountiesSearched: countyResult.totalFound,
-      contractors
+      contractors: enrichedContractors
     });
     
   } catch (error) {

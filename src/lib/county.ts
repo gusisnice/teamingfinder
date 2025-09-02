@@ -6,10 +6,6 @@ import { SEARCH_RADIUS_MILES, EARTH_RADIUS_MILES } from './constants';
 type Coords = { lat: number; lon: number };
 type County = { name: string; state: string };
 
-// Helper functions
-const padZip = (zip: string) => zip.padStart(5, '0');
-const dbPath = (file: string) => path.join(process.cwd(), 'public', 'county_db', file);
-const getCountyName = (fips: string) => FIPS_TO_COUNTY_NAME.get(fips) || { name: `County ${fips}`, state: '' };
 
 // Data structures
 const ZIP_TO_FIPS = new Map<string, string>();
@@ -20,15 +16,6 @@ const FIPS_TO_COORDS = new Map<string, Coords>();
 // Track loading state
 let dataLoaded = false;
 
-// Parse CSV helper
-function parseCSV(data: string, handler: (parts: string[]) => void) {
-  const lines = data.split('\n');
-  for (let i = 1; i < lines.length; i++) {
-    const line = lines[i].trim();
-    if (!line) continue;
-    handler(line.split(','));
-  }
-}
 
 // Load all data asynchronously
 async function loadData() {
@@ -36,15 +23,17 @@ async function loadData() {
   
   // Load all files in parallel
   const [zipData, coordData, adjacencyData] = await Promise.all([
-    fs.readFile(dbPath('ZIP_COUNTY_062025.csv'), 'utf-8'),
-    fs.readFile(dbPath('tl_2020_us_zcta520.csv'), 'utf-8'),
-    fs.readFile(dbPath('county_adjacency.txt'), 'utf-8')
+    fs.readFile(path.join(process.cwd(), 'public', 'county_db', 'ZIP_COUNTY_062025.csv'), 'utf-8'),
+    fs.readFile(path.join(process.cwd(), 'public', 'county_db', 'tl_2020_us_zcta520.csv'), 'utf-8'),
+    fs.readFile(path.join(process.cwd(), 'public', 'county_db', 'county_adjacency.txt'), 'utf-8')
   ]);
   
   // Parse ZIP to County FIPS mapping
-  parseCSV(zipData, (parts) => {
+  zipData.split('\n').forEach((line, i) => {
+    if (i === 0 || !line.trim()) return;
+    const parts = line.split(',');
     if (parts.length >= 2) {
-      const zip = padZip(parts[0]);
+      const zip = parts[0].padStart(5, '0');
       if (!ZIP_TO_FIPS.has(zip)) {
         ZIP_TO_FIPS.set(zip, parts[1]);
       }
@@ -52,12 +41,14 @@ async function loadData() {
   });
 
   // Parse ZIP coordinates
-  parseCSV(coordData, (parts) => {
+  coordData.split('\n').forEach((line, i) => {
+    if (i === 0 || !line.trim()) return;
+    const parts = line.split(',');
     if (parts.length >= 9) {
       const lat = parseFloat(parts[7].replace('+', ''));
       const lon = parseFloat(parts[8].replace('+', ''));
       if (!isNaN(lat) && !isNaN(lon)) {
-        ZIP_COORDS.set(padZip(parts[0]), { lat, lon });
+        ZIP_COORDS.set(parts[0].padStart(5, '0'), { lat, lon });
       }
     }
   });
@@ -117,7 +108,7 @@ export async function findCountiesWithinRadius(zipCode: string, radiusMiles = SE
   const centerCoords = FIPS_TO_COORDS.get(centerFips);
   if (!centerCoords) throw new Error(`No coordinates for county FIPS ${centerFips}`);
   
-  const centerCountyInfo = getCountyName(centerFips);
+  const centerCountyInfo = FIPS_TO_COUNTY_NAME.get(centerFips) || { name: `County ${centerFips}`, state: '' };
   
   const nearbyCounties: Array<{
     fips: string;
@@ -133,7 +124,7 @@ export async function findCountiesWithinRadius(zipCode: string, radiusMiles = SE
     );
     
     if (distance <= radiusMiles) {
-      const countyInfo = getCountyName(fips);
+      const countyInfo = FIPS_TO_COUNTY_NAME.get(fips) || { name: `County ${fips}`, state: '' };
       nearbyCounties.push({
         fips,
         name: countyInfo.name,

@@ -11,7 +11,7 @@ import stateMap from './data/fips-states.json';
 import { toISODate } from './utils';
 
 // Type definitions
-type ContractorResult = {
+export type ContractorResult = {
   recipient_name: string;
   recipient_id: string;
   recipient_uei: string;
@@ -31,15 +31,6 @@ type USASpendingResponse = {
     hasNext: boolean;
   };
 };
-
-// Input validation functions
-function validateNAICS(code: string): boolean {
-  return /^\d{6}$/.test(code);
-}
-
-function validateSetAside(type: string): boolean {
-  return VALID_SET_ASIDES.includes(type as SetAsideType);
-}
 
 // Convert FIPS to state/county format for API
 function fipsToLocation(fips: string) {
@@ -62,10 +53,10 @@ export async function searchContractors(
   limit = 10
 ): Promise<ContractorResult[] | undefined> {
   // Validate inputs
-  if (!validateNAICS(naicsCode)) {
+  if (!/^\d{6}$/.test(naicsCode)) {
     throw new Error(`Invalid NAICS code: must be 6 digits, got ${naicsCode}`);
   }
-  if (!validateSetAside(setAsideType)) {
+  if (!VALID_SET_ASIDES.includes(setAsideType as SetAsideType)) {
     throw new Error(`Invalid set-aside type: ${setAsideType}. Valid types: ${VALID_SET_ASIDES.join(', ')}`);
   }
 
