@@ -13,7 +13,7 @@ import { toISODate } from './utils';
 // Load NAICS codes once at startup and cache in memory
 const VALID_NAICS_CODES = new Set<string>();
 import('./data/naicsJson.json').then(module => {
-  module.default.forEach((item: any) => VALID_NAICS_CODES.add(item.naics_code));
+  module.default.forEach((item: { naics_code: string }) => VALID_NAICS_CODES.add(item.naics_code));
 });
 
 // Type definitions
