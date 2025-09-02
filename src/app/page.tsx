@@ -193,7 +193,16 @@ export default function Home() {
         {results && results.length > 0 && (
           <div className="space-y-3">
             {results.map((contractor) => (
-              <article key={contractor.recipient_id} className="bg-gray-50 rounded-lg p-5">
+              <article 
+                key={contractor.recipient_id} 
+                className={`bg-gray-50 rounded-lg p-5 ${contractor.website ? 'cursor-pointer hover:bg-gray-100 transition-colors' : ''}`}
+                onClick={() => {
+                  if (contractor.website) {
+                    const url = contractor.website.startsWith('http') ? contractor.website : `https://${contractor.website}`;
+                    window.open(url, '_blank');
+                  }
+                }}
+              >
                 <h3 className="font-medium text-gray-900 mb-3">
                   {contractor.recipient_name}
                 </h3>
@@ -207,7 +216,6 @@ export default function Home() {
                           ({contractor.phone.slice(0, 3)}) {contractor.phone.slice(3, 6)}-{contractor.phone.slice(6, 10)}
                         </p>
                       )}
-                      {contractor.website && <p>{contractor.website.replace(/^(https?:\/\/)?(www\.)?/, '')}</p>}
                     </div>
                   )}
                   {contractor.year_established && (
