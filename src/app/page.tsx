@@ -62,7 +62,7 @@ export default function Home() {
           Find Teaming Partners
         </h1>
         <p className="text-gray-500 text-sm mb-10">
-          Find certified businesses for your opportunity
+          Find certified businesses for an opportunity
         </p>
         
         <form onSubmit={handleSubmit} className="space-y-6 mb-10">
@@ -198,7 +198,11 @@ export default function Home() {
                 className={`bg-gray-50 rounded-lg p-5 ${contractor.website ? 'cursor-pointer hover:bg-gray-100 transition-colors' : ''}`}
                 onClick={() => {
                   if (contractor.website) {
-                    const url = contractor.website.startsWith('http') ? contractor.website : `https://${contractor.website}`;
+                    let url = contractor.website;
+                    // Remove www. prefix
+                    url = url.replace(/^(https?:\/\/)?(www\.)?/, '');
+                    // Always use https://
+                    url = `https://${url}`;
                     window.open(url, '_blank');
                   }
                 }}
