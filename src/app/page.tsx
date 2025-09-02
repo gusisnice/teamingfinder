@@ -2,6 +2,19 @@
 
 import { useState, FormEvent } from 'react';
 
+// Google Analytics type
+declare global {
+  interface Window {
+    gtag?: (
+      command: 'event' | 'config' | 'js',
+      targetId: string | Date,
+      config?: {
+        [key: string]: string | number;
+      }
+    ) => void;
+  }
+}
+
 type ContractorData = {
   recipient_name: string;
   recipient_id: string;
@@ -32,6 +45,18 @@ export default function Home() {
     const address = formData.get('address') as string;
     const naicsCode = formData.get('naics') as string;
     const setAsideType = formData.get('setAsideType') as string;
+    
+    // Track search event in Google Analytics
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', 'search', {
+        search_term: `${naicsCode}_${address}_${setAsideType}`,
+        zip_code: address,
+        naics_code: naicsCode,
+        set_aside_type: setAsideType,
+        event_category: 'engagement',
+        event_label: 'partner_search'
+      });
+    }
     
     try {
       const res = await fetch('/api/partner-search', {
@@ -203,6 +228,17 @@ export default function Home() {
                     url = url.replace(/^(https?:\/\/)?(www\.)?/, '');
                     // Always use https://
                     url = `https://${url}`;
+                    
+                    // Track contractor click event
+                    if (typeof window !== 'undefined' && window.gtag) {
+                      window.gtag('event', 'contractor_click', {
+                        contractor_name: contractor.recipient_name,
+                        contractor_website: url,
+                        event_category: 'engagement',
+                        event_label: 'website_visit'
+                      });
+                    }
+                    
                     window.open(url, '_blank');
                   }
                 }}
