@@ -109,22 +109,38 @@ export default function Home() {
             <label className="block text-sm text-gray-900 mb-2">
               What certification needed?
             </label>
-            <div className="relative group">
+            <div className="relative">
               <input type="hidden" name="setAsideType" id="setAsideTypeInput" required />
               <button
                 type="button"
                 id="dropdownButton"
-                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-lg focus:outline-none focus:bg-white focus:ring-1 focus:ring-gray-900 transition-all text-left flex justify-between items-center peer"
+                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-lg focus:outline-none focus:bg-white focus:ring-1 focus:ring-gray-900 transition-all text-left flex justify-between items-center"
                 data-value=""
+                onClick={() => {
+                  const dropdown = document.getElementById('dropdownMenu') as HTMLElement | null;
+                  const arrow = document.getElementById('dropdownArrow') as HTMLElement | null;
+                  if (dropdown && arrow) {
+                    const isOpen = dropdown.classList.contains('opacity-100');
+                    if (isOpen) {
+                      dropdown.classList.remove('opacity-100', 'visible');
+                      dropdown.classList.add('opacity-0', 'invisible');
+                      arrow.classList.remove('rotate-180');
+                    } else {
+                      dropdown.classList.remove('opacity-0', 'invisible');
+                      dropdown.classList.add('opacity-100', 'visible');
+                      arrow.classList.add('rotate-180');
+                    }
+                  }
+                }}
               >
                 <span className="text-gray-500">
                   Select certification type
                 </span>
-                <svg className="h-4 w-4 text-gray-400 transition-transform group-focus-within:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg id="dropdownArrow" className="h-4 w-4 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
-              <div className="absolute z-10 w-full mt-1 bg-white rounded-lg shadow-lg border border-gray-100 opacity-0 invisible group-focus-within:opacity-100 group-focus-within:visible transition-all">
+              <div id="dropdownMenu" className="absolute z-10 w-full mt-1 bg-white rounded-lg shadow-lg border border-gray-100 opacity-0 invisible transition-all">
                 {[
                   { value: '8(a)', label: '8(a)' },
                   { value: 'HUBZone', label: 'HUBZone' },
@@ -138,14 +154,17 @@ export default function Home() {
                     onClick={() => {
                       const button = document.getElementById('dropdownButton') as HTMLButtonElement;
                       const input = document.getElementById('setAsideTypeInput') as HTMLInputElement;
+                      const dropdown = document.getElementById('dropdownMenu') as HTMLDivElement;
+                      const arrow = document.getElementById('dropdownArrow') as HTMLElement;
                       const span = button.querySelector('span') as HTMLSpanElement;
                       button.dataset.value = option.value;
                       input.value = option.value;
                       span.textContent = option.label;
                       span.className = 'text-gray-900';
-                      button.blur();
+                      dropdown.classList.remove('opacity-100', 'visible');
+                      dropdown.classList.add('opacity-0', 'invisible');
+                      arrow.classList.remove('rotate-180');
                     }}
-                    onMouseDown={(e) => e.preventDefault()}
                     className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50 transition-colors first:rounded-t-lg last:rounded-b-lg"
                   >
                     {option.label}
