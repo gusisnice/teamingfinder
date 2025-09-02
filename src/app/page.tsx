@@ -95,7 +95,7 @@ export default function Home() {
               type="text"
               required
               maxLength={6}
-              pattern="\d{6}"
+              pattern="\d{2,6}"
               onInput={(e) => {
                 const input = e.target as HTMLInputElement;
                 input.value = input.value.replace(/\D/g, '');

@@ -10,6 +10,12 @@ import {
 import stateMap from './data/fips-states.json';
 import { toISODate } from './utils';
 
+// Load NAICS codes once at startup and cache in memory
+const VALID_NAICS_CODES = new Set<string>();
+import('./data/naicsJson.json').then(module => {
+  module.default.forEach((item: any) => VALID_NAICS_CODES.add(item.naics_code));
+});
+
 // Type definitions
 export type ContractorResult = {
   recipient_name: string;
@@ -62,8 +68,11 @@ export async function searchContractors(
   limit = 10
 ): Promise<ContractorResult[] | undefined> {
   // Validate inputs
-  if (!/^\d{6}$/.test(naicsCode)) {
-    throw new Error(`Invalid NAICS code: must be 6 digits, got ${naicsCode}`);
+  if (!/^\d{2,6}$/.test(naicsCode)) {
+    throw new Error(`Invalid NAICS code: must be 2-6 digits, got ${naicsCode}`);
+  }
+  if (!VALID_NAICS_CODES.has(naicsCode)) {
+    throw new Error(`Invalid NAICS code: ${naicsCode} is not real`);
   }
   if (!VALID_SET_ASIDES.includes(setAsideType as SetAsideType)) {
     throw new Error(`Invalid set-aside type: ${setAsideType}. Valid types: ${VALID_SET_ASIDES.join(', ')}`);

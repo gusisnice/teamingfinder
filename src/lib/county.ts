@@ -13,13 +13,20 @@ const ZIP_COORDS = new Map<string, Coords>();
 const FIPS_TO_COUNTY_NAME = new Map<string, County>();
 const FIPS_TO_COORDS = new Map<string, Coords>();
 
-// Track loading state
-let dataLoaded = false;
-
+// Single promise for deduplication
+let loadingPromise: Promise<void> | null = null;
 
 // Load all data asynchronously
-async function loadData() {
-  if (dataLoaded) return;
+async function loadData(): Promise<void> {
+  // Return existing promise if loading/loaded
+  if (loadingPromise) return loadingPromise;
+  
+  // Create and cache the promise
+  loadingPromise = loadDataInternal();
+  return loadingPromise;
+}
+
+async function loadDataInternal() {
   
   // Load all files in parallel
   const [zipData, coordData, adjacencyData] = await Promise.all([
@@ -81,8 +88,12 @@ async function loadData() {
     const avgLon = zips.reduce((sum, z) => sum + z.lon, 0) / zips.length;
     FIPS_TO_COORDS.set(fips, { lat: avgLat, lon: avgLon });
   });
-  
-  dataLoaded = true;
+}
+
+// Preload data at module initialization for instant access
+if (typeof window === 'undefined') {
+  // Only on server side - start loading immediately
+  loadData();
 }
 
 // Calculate distance between two points in miles
