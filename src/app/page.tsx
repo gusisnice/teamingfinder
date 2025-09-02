@@ -207,7 +207,7 @@ export default function Home() {
                           ({contractor.phone.slice(0, 3)}) {contractor.phone.slice(3, 6)}-{contractor.phone.slice(6, 10)}
                         </p>
                       )}
-                      {contractor.website && <p>{contractor.website.replace(/^www\./, '')}</p>}
+                      {contractor.website && <p>{contractor.website.replace(/^https?:\/\/(www\.)?/, '')}</p>}
                     </div>
                   )}
                   {contractor.year_established && (
