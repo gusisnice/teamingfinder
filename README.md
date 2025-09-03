@@ -12,12 +12,11 @@ Find certified federal contractors for federal opportunities.
 
 Government contractors need to find certified businesses to partner with for set-aside opportunities.
 
-## Quick Start
+## Run
 
 ```bash
 npm install
 npm run dev
-# Open http://localhost:3000
 ```
 
 ## How it works
